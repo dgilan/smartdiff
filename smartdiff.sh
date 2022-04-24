@@ -1,7 +1,6 @@
 #!/bin/bash
-VERSION=0.0.1
-SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-PATH=$PATH":"$SCRIPTPATH
+VERSION=0.0.0
+REPO='dgilan/smartdiff'
 HOMEPATH=$HOME"/.smartdiff"
 REVISION_LIST_FILE=$HOMEPATH"/revisions_list.txt"
 LOGFILE=$HOMEPATH"/smartdiff.log"
@@ -104,7 +103,7 @@ function clean_up() {
     then
         if [ ! "$1" == "--force" ]
         then
-            read -rep $'Are you sure you want to abort previous smartdiff? (y/N)\n' -n 1 confirmation
+            read -s -rp $'Are you sure you want to abort previous smartdiff? (y/N)\n' -n 1 confirmation
             if [[ ! "${confirmation:-N}" =~ ^[Yy]$ ]]
             then
                 echo "Try running 'smartdiff --continue'."
@@ -118,7 +117,8 @@ function clean_up() {
     fi
 }
 
-function extract() {
+# 
+function cherry_pick() {
     for ((i=1;i<=$#;i++))
     do
         set_config 'current_ref_index' $i
@@ -132,7 +132,7 @@ function extract() {
     done
 }
 
-function extract_continue() {
+function cherry_pick_continue() {
     parse_config
     refs=($revisions)
 
@@ -175,6 +175,7 @@ function check_package() {
     [[ $version == "null" ]] && echo "1" || echo "0"
 }
 
+# Checks the list of packages to be installed
 function check_deps() {
     for package in "$@"
     do
@@ -196,26 +197,23 @@ function check_deps() {
     done
 }
 
-function open() {
-    if which xdg-open > /dev/null
-    then
-        xdg-open $1
-    elif which gnome-open > /dev/null
-    then
-     gnome-open $1
-    fi
-}
-
+# Checks the latest version and updates package to it
 function check_update() {
-    latest=$(curl -s https://api.github.com/repos/dgilan/smartdiff/releases/latest | jq .tag_name)
-    if [ "$latest" != "\"v$VERSION\"" ]
+    latest=$(curl -s https://api.github.com/repos/$REPO/releases/latest | jq .tag_name | sed -En "s/\"v(.*)\"/\1/p")
+    if [ "$latest" != "$VERSION" ]
     then
-        echo "A new smartdiff version is available"
-        open https://github.com/dgilan/smartdiff
-        exit 0
+        read -s -rp $'A new version available. Would you like to update? (Y/n)\n' -n 1 confirmation
+        if [[ "${confirmation:-Y}" =~ ^[Yy]$ ]]
+        then
+            curl -o- https://raw.githubusercontent.com/$REPO/v$latest/install.sh 1>/dev/null | bash
+            exit 0
+        else
+            exit 1
+        fi
     fi
 }
 
+# -------- Checking for updates  ------------- #
 check_update
 
 # -------- Checking all dependencies --------- #
@@ -258,7 +256,7 @@ case "$1" in
 
         switch_to_diff_branch "${refs[0]}"
 
-        extract "${refs[@]}"
+        cherry_pick "${refs[@]}"
         get_diff $root_ref
         clean_up --force
     ;;
@@ -272,21 +270,17 @@ case "$1" in
             exit 1
         fi
 
-        extract_continue
+        cherry_pick_continue
       
         get_diff $root_ref
         clean_up --force
     ;;
-    --test)
-        set_config test_key 1 2 3 4 5
-    ;;
-    
     *)
         cat << EOF
 Using: smartdiff --filter CAV-12345
 
 Options: 
-    --filter    Selects all revision by the filter, cherry-picks them and makes diff.
+    --filter    Selects all revisions by the filter, cherry-picks them and makes diff.
     --version   Prints version
     --continue  Continue cherry-picking once the conflicts resolved
     --abort     Aborts cherry-picking
