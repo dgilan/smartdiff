@@ -196,6 +196,27 @@ function check_deps() {
     done
 }
 
+function open() {
+    if which xdg-open > /dev/null
+    then
+        xdg-open $1
+    elif which gnome-open > /dev/null
+    then
+     gnome-open $1
+    fi
+}
+
+function check_update() {
+    latest=$(curl -s https://api.github.com/repos/dgilan/smartdiff/releases/latest | jq .tag_name)
+    if [ "$latest" != "\"v$VERSION\"" ]
+    then
+        echo "A new smartdiff version is available"
+        open https://github.com/dgilan/smartdiff
+        exit 0
+    fi
+}
+
+check_update
 
 # -------- Checking all dependencies --------- #
 dependencies_checks=$(check_deps ${DEPS[@]})
