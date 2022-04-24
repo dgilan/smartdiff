@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=0.1.3
+VERSION=0.1.4
 
 if [ -d $HOME/.local/bin ]
 then

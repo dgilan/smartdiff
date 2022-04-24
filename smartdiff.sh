@@ -1,5 +1,5 @@
 #!/bin/bash
-VERSION=0.1.3
+VERSION=0.1.4
 REPO='dgilan/smartdiff'
 HOMEPATH=$HOME"/.smartdiff"
 REVISION_LIST_FILE=$HOMEPATH"/revisions_list.txt"
