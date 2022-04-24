@@ -32,3 +32,12 @@ smartdiff --continue
 ```bash
 smartdiff --abort
 ```
+
+## Development
+
+### How to release
+
+```bash
+# Example
+./release.sh 0.0.1 'Description'
+```
