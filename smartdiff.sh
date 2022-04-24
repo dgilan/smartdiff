@@ -217,16 +217,14 @@ function check_update() {
 # -------- Checking all dependencies --------- #
 dependencies_checks=$(check_deps ${DEPS[@]})
 
-# -------- Checking for updates  ------------- #
-check_update
-
-
-
 if [ "$dependencies_checks" != "" ]
 then
     echo $dependencies_checks
     exit 1
 fi
+
+# -------- Checking for updates  ------------- #
+check_update
 
 # --------- Running the script ----------------#
 case "$1" in
