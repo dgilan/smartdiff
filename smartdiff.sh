@@ -7,6 +7,7 @@ LOGFILE=$HOMEPATH"/smartdiff.log"
 STATUS_FILE=$HOMEPATH"/status.cfg"
 DEPS=(
     "git"
+    "jq"
     "node"
     "npm"
     "diff2html"
