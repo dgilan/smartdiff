@@ -214,11 +214,13 @@ function check_update() {
     fi
 }
 
+# -------- Checking all dependencies --------- #
+dependencies_checks=$(check_deps ${DEPS[@]})
+
 # -------- Checking for updates  ------------- #
 check_update
 
-# -------- Checking all dependencies --------- #
-dependencies_checks=$(check_deps ${DEPS[@]})
+
 
 if [ "$dependencies_checks" != "" ]
 then
