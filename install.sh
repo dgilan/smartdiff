@@ -1,7 +1,14 @@
 #!/bin/bash
 
 VERSION=0.1.0
-BIN_PATH=$HOME/.local/bin
+
+if [ -d $HOME/.local/bin ]
+then
+    BIN_PATH=$HOME/.local/bin
+else
+    BIN_PATH=/usr/local/bin  
+fi
+
 FULL_PATH=$BIN_PATH/smartdiff
 
 if [ -f $FULL_PATH ]
