@@ -62,7 +62,7 @@ then
     exit 0
 fi
 
-git add install.sh smartdiff.sh README.md
+git add install.sh smartdiff.sh README.md src/config.sh
 git commit -m "Releasing $VERSION"
 
 git tag v$VERSION

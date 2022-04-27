@@ -1,4 +1,4 @@
-VERSION=0.2.0
+VERSION=0.2.1
 REPO='dgilan/smartdiff'
 HOMEPATH=$HOME"/.smartdiff"
 REVISION_LIST_FILE=$HOMEPATH"/revisions_list.txt"
