@@ -2,6 +2,17 @@
 
 VERSION=$1
 DESCRIPTION=$2
+DRY_RUN=$3
+SOURCES=(
+    'src/config.sh'
+    'src/deps.sh'
+    'src/updates.sh'
+    'src/utils.sh'
+    'src/git_utils.sh'
+    'src/run.sh'
+)
+OUTPUT=smartdiff.sh
+
 if [ "$VERSION" == '' ]
 then
     echo 'You must specify the release version'
@@ -25,9 +36,31 @@ if [ $(git tag -l "v$VERSION") ]; then
     exit 1
 fi
 
-sed -i "s/VERSION=[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+/VERSION=$VERSION/" ./install.sh
-sed -i "s/VERSION=[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+/VERSION=$VERSION/" ./smartdiff.sh
-sed -i "s/\/v[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\//\/v$VERSION\//g" ./README.md
+sed -i "s/VERSION=[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+/VERSION=$VERSION/" install.sh
+sed -i "s/VERSION=[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+/VERSION=$VERSION/" src/config.sh
+sed -i "s/\/v[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\//\/v$VERSION\//g" README.md
+
+if [ -f $OUTPUT ]
+then
+    rm $OUTPUT
+fi
+
+echo '#!/bin/bash' > $OUTPUT
+
+for src in ${SOURCES[@]}
+do
+    echo "#########################################
+###########  $src  ##############
+#########################################" >> $OUTPUT
+    cat $src >> $OUTPUT
+done
+
+
+if [ $DRY_RUN == '--dry-run' ]
+then
+    echo "The script has finished the dry run."
+    exit 0
+fi
 
 git add install.sh smartdiff.sh README.md
 git commit -m "Releasing $VERSION"
