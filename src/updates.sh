@@ -6,6 +6,11 @@ function check_update() {
         read -s -rp $'A new version is available. Would you like to update? (Y/n)\n' -n 1 confirmation
         if [[ "${confirmation:-Y}" =~ ^[Yy]$ ]]
         then
+            echo "Trying to update the smartdiff...
+If it didn't work please run the next command manualy:
+
+curl -o- https://raw.githubusercontent.com/dgilan/smartdiff/v0.2.1/install.sh | bash
+"
             curl -o- https://raw.githubusercontent.com/$REPO/v$latest/install.sh | bash
             exit 0
         else
