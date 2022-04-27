@@ -1,10 +1,14 @@
 #!/bin/bash
-VERSION=0.1.4
+#########################################
+###########  src/config.sh  ##############
+#########################################
+VERSION=0.2.0
 REPO='dgilan/smartdiff'
 HOMEPATH=$HOME"/.smartdiff"
 REVISION_LIST_FILE=$HOMEPATH"/revisions_list.txt"
 LOGFILE=$HOMEPATH"/smartdiff.log"
 STATUS_FILE=$HOMEPATH"/status.cfg"
+FILTER_BY=$2
 DEPS=(
     "git"
     "jq"
@@ -12,11 +16,63 @@ DEPS=(
     "npm"
     "diff2html"
 )
-FILTER_BY=$2
+#########################################
+###########  src/deps.sh  ##############
+#########################################
+# Checks the list of packages to be installed
+function check_deps() {
+    for package in "$@"
+    do
+        if [ $(check_package $package) == "1" ]
+        then
+            if [ "$package" == "diff2html" ]
+            then
+                read -p "Would you like to install $package (Y/n):" -n 1 confirmation
 
-# --------------- FUNCTIONS ------------------ #
-# Adds a message into the logfile
+                if [[ "${confirmation:-Y}" =~ ^[Yy]$ ]]
+                then
+                    echo "Installing $package"
+                    npm install -g diff2html-cli
+                fi
+            else
+                echo "Please, install $package first".
+            fi
+        fi
+    done
+}
+
+# Checks that package is installed by running
+# $package --version command
+# Returns 0 if installed and 1 if not.
+function check_package() {
+    version=$($1 --version 2>/dev/null || echo "null")
+    [[ $version == "null" ]] && echo "1" || echo "0"
+}
+
+#########################################
+###########  src/updates.sh  ##############
+#########################################
+# Checks the latest version and updates package to it
+function check_update() {
+    latest=$(curl -s https://api.github.com/repos/$REPO/releases/latest | jq .tag_name | sed -En "s/\"v(.*)\"/\1/p")
+    if [ "$latest" != "$VERSION" ]
+    then
+        read -s -rp $'A new version is available. Would you like to update? (Y/n)\n' -n 1 confirmation
+        if [[ "${confirmation:-Y}" =~ ^[Yy]$ ]]
+        then
+            curl -o- https://raw.githubusercontent.com/$REPO/v$latest/install.sh 1>/dev/null | bash
+            exit 0
+        else
+            exit 1
+        fi
+    fi
+}
+#########################################
+###########  src/utils.sh  ##############
+#########################################
+# Add logs to the logfile
 function log() {
+    # TODO: do we need tee here?
     echo -e $(date +"%Y-%m-%d %H:%M:%S") $1 | tee -a $LOGFILE 1>/dev/null
 }
 
@@ -36,11 +92,6 @@ function createFileIfNotExist() {
     fi
 }
 
-# Returns current branch name
-function current_branch() {
-    echo $(git rev-parse --abbrev-ref HEAD)
-}
-
 # Parses config files and injects its values as variables
 function parse_config() {
     log "Reading config file: $STATUS_FILE"
@@ -57,6 +108,45 @@ function set_config() {
     log "Set config value: $key=$values"
     echo -e "$key=$as_string" >> $STATUS_FILE
 }
+
+# Checks out to the original branch and removes all temporary files.
+function clean_up() {
+    if [ -f $STATUS_FILE ]
+    then
+        if [ ! "$1" == "--force" ]
+        then
+            read -s -rp $'Are you sure you want to abort previous smartdiff? (y/N)\n' -n 1 confirmation
+            if [[ ! "${confirmation:-N}" =~ ^[Yy]$ ]]
+            then
+                echo "Try running 'smartdiff --continue'."
+                exit 1
+            fi
+        fi
+        parse_config
+        switch_to_original_branch
+        rm $STATUS_FILE
+        rm $LOGFILE
+    fi
+}
+
+function print_conflict_message() {
+    echo "Resolve conflicts and run the script with --continue flag"
+}
+
+# Thats the point the whole script was created about!
+function get_diff() {
+    log "Creating a diff file"
+    git diff $1 > /tmp/smartdiff.diff
+    diff2html -s side -f html -d word -i file -o preview -- /tmp/smartdiff.diff
+}
+#########################################
+###########  src/git_utils.sh  ##############
+#########################################
+# Returns current branch name
+function current_branch() {
+    echo $(git rev-parse --abbrev-ref HEAD)
+}
+
 
 function stash() {
     log "Stashing the working directory"
@@ -98,25 +188,6 @@ function get_revisions() {
     echo $revisions
 }
 
-# Checks out to the original branch and removes all temporary files.
-function clean_up() {
-    if [ -f $STATUS_FILE ]
-    then
-        if [ ! "$1" == "--force" ]
-        then
-            read -s -rp $'Are you sure you want to abort previous smartdiff? (y/N)\n' -n 1 confirmation
-            if [[ ! "${confirmation:-N}" =~ ^[Yy]$ ]]
-            then
-                echo "Try running 'smartdiff --continue'."
-                exit 1
-            fi
-        fi
-        parse_config
-        switch_to_original_branch
-        rm $STATUS_FILE
-        rm $LOGFILE
-    fi
-}
 
 # 
 function cherry_pick() {
@@ -127,7 +198,7 @@ function cherry_pick() {
         git cherry-pick ${!i}
         if [ $? -eq 1 ]
         then
-            echo "Resolve conflicts and run the script with --continue flag"
+            print_conflict_message
             exit 1
         fi
     done
@@ -143,7 +214,7 @@ function cherry_pick_continue() {
     git -c core.editor=true cherry-pick --continue
     if [ $? -eq 1 ]
     then
-        echo "Resolve conflicts and run the script with --continue flag"
+        print_conflict_message
         exit 1
     fi
 
@@ -156,64 +227,16 @@ function cherry_pick_continue() {
         git cherry-pick $ref
         if [ $? -eq 1 ]
         then
-            echo "Resolve conflicts and run the script with --continue flag"
+            print_conflict_message
             exit 1
         fi
     done
 }
 
-function get_diff() {
-    log "Creating a diff file"
-    git diff $1 > /tmp/smartdiff.diff
-    diff2html -s side -f html -d word -i file -o preview -- /tmp/smartdiff.diff
-}
 
-# Checks that package is installed by running
-# $package --version command
-# Returns 0 if installed and 1 if not.
-function check_package() {
-    version=$($1 --version 2>/dev/null || echo "null")
-    [[ $version == "null" ]] && echo "1" || echo "0"
-}
-
-# Checks the list of packages to be installed
-function check_deps() {
-    for package in "$@"
-    do
-        if [ $(check_package $package) == "1" ]
-        then
-            if [ "$package" == "diff2html" ]
-            then
-                read -p "Would you like to install $package (Y/n):" -n 1 confirmation
-
-                if [[ "${confirmation:-Y}" =~ ^[Yy]$ ]]
-                then
-                    echo "Installing $package"
-                    npm install -g diff2html-cli
-                fi
-            else
-                echo "Please, install $package first".
-            fi
-        fi
-    done
-}
-
-# Checks the latest version and updates package to it
-function check_update() {
-    latest=$(curl -s https://api.github.com/repos/$REPO/releases/latest | jq .tag_name | sed -En "s/\"v(.*)\"/\1/p")
-    if [ "$latest" != "$VERSION" ]
-    then
-        read -s -rp $'A new version available. Would you like to update? (Y/n)\n' -n 1 confirmation
-        if [[ "${confirmation:-Y}" =~ ^[Yy]$ ]]
-        then
-            curl -o- https://raw.githubusercontent.com/$REPO/v$latest/install.sh 1>/dev/null | bash
-            exit 0
-        else
-            exit 1
-        fi
-    fi
-}
-
+#########################################
+###########  src/run.sh  ##############
+#########################################
 # -------- Checking all dependencies --------- #
 dependencies_checks=$(check_deps ${DEPS[@]})
 
@@ -233,6 +256,7 @@ case "$1" in
         exit 0
     ;;
     --filter)
+        # TODO: is it git repo check
         createDirIfNotExist $HOMEPATH
 
         if [ -f $STATUS_FILE ]
@@ -267,7 +291,9 @@ case "$1" in
     --continue)
         if [ ! -f $STATUS_FILE ]
         then
-            echo "No smart diff config found to continue"
+            # TODO: colorize messages
+            echo $'There is nothing to continue..\n'
+            bash $0 --help
             exit 1
         fi
 
