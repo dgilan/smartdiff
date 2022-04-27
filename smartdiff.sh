@@ -2,7 +2,7 @@
 #########################################
 ###########  src/config.sh  ##############
 #########################################
-VERSION=0.2.0
+VERSION=0.2.1
 REPO='dgilan/smartdiff'
 HOMEPATH=$HOME"/.smartdiff"
 REVISION_LIST_FILE=$HOMEPATH"/revisions_list.txt"
@@ -60,7 +60,7 @@ function check_update() {
         read -s -rp $'A new version is available. Would you like to update? (Y/n)\n' -n 1 confirmation
         if [[ "${confirmation:-Y}" =~ ^[Yy]$ ]]
         then
-            curl -o- https://raw.githubusercontent.com/$REPO/v$latest/install.sh 1>/dev/null | bash
+            curl -o- https://raw.githubusercontent.com/$REPO/v$latest/install.sh | bash
             exit 0
         else
             exit 1
