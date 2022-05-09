@@ -6,12 +6,13 @@ function current_branch() {
 
 function stash() {
     log "Stashing the working directory"
-    git stash &>/dev/null
+    STASH_RESULT=$(git stash)
+    set_config 'stash_result' $STASH_RESULT
 }
 
 function unstash() {
     stash_list=$(git stash list)
-    if [ ! "$stash_list" == '' ]
+    if [ "$stash_list" != '' ] && [ "$stash_result" != 'No local changes to save' ]
     then
         log "Unstashing the working directory"
         git stash pop 1>/dev/null
@@ -22,8 +23,7 @@ function switch_to_diff_branch() {
     stash
     log "Switching to a new branch $diff_branch"
     git checkout "$1~1" &>/dev/null # checkout one commit before the argument
-    git checkout -b "$diff_branch" &>/dev/null
-    
+    git checkout -b "$diff_branch" &>/dev/null   
 }
 
 function switch_to_original_branch() {
