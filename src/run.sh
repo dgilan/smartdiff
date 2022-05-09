@@ -31,6 +31,7 @@ case "$1" in
         original_branch=$(current_branch)
         diff_branch="smart-diff-$FILTER_BY"
 
+        set_config 'FILTER_BY' $FILTER_BY
         set_config 'original_branch' $original_branch
         set_config 'diff_branch' $diff_branch
 

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Diff</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/github.min.css" />
+    <!--diff2html-css-->
+    <!--diff2html-js-ui-->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const targetElement = document.getElementById('diff');
+            const diff2htmlUi = new Diff2HtmlUI(targetElement);
+            //diff2html-fileListToggle
+            //diff2html-synchronisedScroll
+            //diff2html-highlightCode
+        });
+    </script>
+    <style>
+        header {
+            display:flex;
+            justify-content: center;
+        }
+        header .filter {
+            margin-left: 10px;
+            font-weight: bold;
+        }
+    </style>
+
+</head>
+
+<body>
+    <header id="title">
+        <label>
+            Filtered by:
+        </label>
+        <span class="filter"><!--smartdiff-filter-by--></span>
+    </header>
+
+    <div id="diff">
+        <!--diff2html-diff-->
+    </div>
+</body>
+
+</html>
