@@ -3,7 +3,7 @@ HTML_TEMPLATE="\<\!DOCTYPEhtml\>\<htmllang=\"en\"\>\<head\>\<metacharset=\"UTF-8
 #########################################
 ###########  src/config.sh  ##############
 #########################################
-VERSION=0.2.1
+VERSION=0.2.3
 REPO='dgilan/smartdiff'
 HOMEPATH=$HOME"/.smartdiff"
 REVISION_LIST_FILE=$HOMEPATH"/revisions_list.txt"
@@ -64,12 +64,10 @@ function check_update() {
             echo "Trying to update the smartdiff...
 If it didn't work please run the next command manualy:
 
-curl -o- https://raw.githubusercontent.com/dgilan/smartdiff/v0.2.1/install.sh | bash
+curl -o- https://raw.githubusercontent.com/$REPO/v$latest/install.sh | bash
 "
-            curl -o- https://raw.githubusercontent.com/$REPO/v$latest/install.sh | bash
+            curl -o- https://raw.githubusercontent.com/$REPO/v$latest/install.sh
             exit 0
-        else
-            exit 1
         fi
     fi
 }
