@@ -3,7 +3,7 @@ HTML_TEMPLATE="\<\!DOCTYPEhtml\>\<htmllang=\"en\"\>\<head\>\<metacharset=\"UTF-8
 #########################################
 ###########  src/config.sh  ##############
 #########################################
-VERSION=0.2.3
+VERSION=0.2.5
 REPO='dgilan/smartdiff'
 HOMEPATH=$HOME"/.smartdiff"
 REVISION_LIST_FILE=$HOMEPATH"/revisions_list.txt"
