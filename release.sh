@@ -41,9 +41,11 @@ then
     rm $OUTPUT
 fi
 
-sed -i "s/VERSION=[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+/VERSION=$VERSION/" install.sh
-sed -i "s/VERSION=[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+/VERSION=$VERSION/" src/config.sh
-sed -i "s/\/v[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\//\/v$VERSION\//g" README.md
+source ./src/utils.sh
+
+gnu_sed -i "s/VERSION=[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+/VERSION=$VERSION/" install.sh
+gnu_sed -i "s/VERSION=[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+/VERSION=$VERSION/" src/config.sh
+gnu_sed -i "s/\/v[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\//\/v$VERSION\//g" README.md
 
 echo '#!/bin/bash' > $OUTPUT
 HTML_TEMPLATE=$(cat ui.html)

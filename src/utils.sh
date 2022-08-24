@@ -1,3 +1,12 @@
+function gnu_sed() {
+    if [ "$(uname)" == "Darwin" ]
+    then
+        echo $(gsed ${@})
+    else
+        echo $(sed ${@})
+    fi
+}
+
 # Add logs to the logfile
 function log() {
     # TODO: do we need tee here?
@@ -67,7 +76,7 @@ function get_diff() {
     git diff $1 > /tmp/smartdiff.diff
     log "Creating a template"
     echo 'FilteringBy: '$FILTER_BY
-    echo $HTML_TEMPLATE | sed "s/<\!\-\-smartdiff\-filter\-by\-\->/$FILTER_BY/" > /tmp/html_template.html
+    echo $HTML_TEMPLATE | gnu_sed "s/<\!\-\-smartdiff\-filter\-by\-\->/$FILTER_BY/" > /tmp/html_template.html
 
     diff2html -s side -f html -d word -i file -o preview --hwt /tmp/html_template.html -- /tmp/smartdiff.diff
 }
