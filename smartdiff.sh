@@ -3,7 +3,7 @@ HTML_TEMPLATE="\<\!DOCTYPEhtml\>\<htmllang=\"en\"\>\<head\>\<metacharset=\"UTF-8
 #########################################
 ###########  src/config.sh  ##############
 #########################################
-VERSION=0.2.5
+VERSION=0.2.6
 REPO='dgilan/smartdiff'
 HOMEPATH=$HOME"/.smartdiff"
 REVISION_LIST_FILE=$HOMEPATH"/revisions_list.txt"
@@ -55,7 +55,7 @@ function check_package() {
 #########################################
 # Checks the latest version and updates package to it
 function check_update() {
-    latest=$(curl -s https://api.github.com/repos/$REPO/releases/latest | jq .tag_name | sed -En "s/\"v(.*)\"/\1/p")
+    latest=$(curl -s https://api.github.com/repos/$REPO/releases/latest | jq .tag_name | gnu_sed -En "s/\"v(.*)\"/\1/p")
     if [ "$latest" != "$VERSION" ]
     then
         read -s -rp $'A new version is available. Would you like to update? (Y/n)\n' -n 1 confirmation
@@ -74,6 +74,15 @@ curl -o- https://raw.githubusercontent.com/$REPO/v$latest/install.sh | bash
 #########################################
 ###########  src/utils.sh  ##############
 #########################################
+function gnu_sed() {
+    if [ "$(uname)" == "Darwin" ]
+    then
+        echo $(gsed ${@})
+    else
+        echo $(sed ${@})
+    fi
+}
+
 # Add logs to the logfile
 function log() {
     # TODO: do we need tee here?
@@ -143,7 +152,7 @@ function get_diff() {
     git diff $1 > /tmp/smartdiff.diff
     log "Creating a template"
     echo 'FilteringBy: '$FILTER_BY
-    echo $HTML_TEMPLATE | sed "s/<\!\-\-smartdiff\-filter\-by\-\->/$FILTER_BY/" > /tmp/html_template.html
+    echo $HTML_TEMPLATE | gnu_sed "s/<\!\-\-smartdiff\-filter\-by\-\->/$FILTER_BY/" > /tmp/html_template.html
 
     diff2html -s side -f html -d word -i file -o preview --hwt /tmp/html_template.html -- /tmp/smartdiff.diff
 }
