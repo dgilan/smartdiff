@@ -1,4 +1,4 @@
-VERSION=0.2.6
+VERSION=0.2.7
 REPO='dgilan/smartdiff'
 HOMEPATH=$HOME"/.smartdiff"
 HTML_TEMPLATE=$HOMEPATH"/ui.html"
