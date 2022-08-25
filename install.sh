@@ -17,4 +17,5 @@ then
 fi
 
 curl https://raw.githubusercontent.com/dgilan/smartdiff/v$VERSION/smartdiff.sh > $BIN_PATH/smartdiff
+curl https://raw.githubusercontent.com/dgilan/smartdiff/v$VERSION/ui.html > $HOME/.smartdiff/ui.html
 chmod +x $FULL_PATH

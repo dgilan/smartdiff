@@ -76,7 +76,9 @@ function get_diff() {
     git diff $1 > /tmp/smartdiff.diff
     log "Creating a template"
     echo 'FilteringBy: '$FILTER_BY
-    echo $HTML_TEMPLATE | gnu_sed "s/<\!\-\-smartdiff\-filter\-by\-\->/$FILTER_BY/" > /tmp/html_template.html
+
+    cat $HTML_TEMPLATE > /tmp/html_template.html
+    gnu_sed -i "s/<\!\-\-smartdiff\-filter\-by\-\->/$FILTER_BY/" /tmp/html_template.html
 
     diff2html -s side -f html -d word -i file -o preview --hwt /tmp/html_template.html -- /tmp/smartdiff.diff
 }

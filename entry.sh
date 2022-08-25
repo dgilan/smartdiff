@@ -1,7 +1,6 @@
 #!/bin/bash
 
 SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-HTML_TEMPLATE=$(cat $SCRIPTPATH/ui.html)
 
 source $SCRIPTPATH/src/config.sh
 source $SCRIPTPATH/src/deps.sh
